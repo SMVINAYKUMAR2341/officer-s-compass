@@ -408,6 +408,9 @@ export const mockMetrics: DashboardMetrics = {
     weekAgo.setDate(weekAgo.getDate() - 7);
     return new Date(a.submittedAt) >= weekAgo;
   }).length,
+  pendingTransfers: 8,
+  overduePayments: 5,
+  totalDisbursed: 125000000,
 };
 
 export const currentOfficer = {

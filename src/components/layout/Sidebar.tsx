@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -8,7 +7,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-  LogOut
+  LogOut,
+  BarChart3,
+  CreditCard,
+  Send,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,9 +24,13 @@ interface SidebarProps {
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/applications', icon: FileText, label: 'Applications' },
+  { path: '/payments', icon: CreditCard, label: 'Payments' },
+  { path: '/transfers', icon: Send, label: 'Fund Transfers' },
   { path: '/kyc', icon: Shield, label: 'KYC Verification' },
   { path: '/audit', icon: ClipboardList, label: 'Audit Log' },
+  { path: '/profile', icon: User, label: 'Profile' },
 ];
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {

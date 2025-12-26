@@ -4,6 +4,8 @@ export type ApplicationStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
 export type AIDecision = 'APPROVED' | 'REJECTED' | 'PENDING_REVIEW';
 export type KYCStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 export type DocumentType = 'IDENTITY' | 'ADDRESS' | 'BANK_STATEMENT';
+export type TransferStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+export type PaymentStatus = 'UPCOMING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
 
 export interface CustomerData {
   id: string;
@@ -26,6 +28,8 @@ export interface CustomerData {
   yearsOfEmployment: number;
   existingLoans: number;
   existingEMI: number;
+  bankAccountMasked?: string;
+  ifscCode?: string;
 }
 
 export interface AIExplanation {
@@ -65,6 +69,34 @@ export interface KYCDocument {
   rejectionReason?: string;
 }
 
+export interface EMIPayment {
+  id: string;
+  applicationId: string;
+  emiNumber: number;
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  status: PaymentStatus;
+  paidAmount?: number;
+  lateFee?: number;
+  reminderSent?: boolean;
+}
+
+export interface FundTransfer {
+  id: string;
+  applicationId: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  bankAccount: string;
+  ifscCode: string;
+  status: TransferStatus;
+  initiatedAt: string;
+  processedAt?: string;
+  batchId?: string;
+  failureReason?: string;
+}
+
 export interface LoanApplication {
   id: string;
   customerId: string;
@@ -80,6 +112,8 @@ export interface LoanApplication {
   kycDocuments: KYCDocument[];
   slaBreachAt: string;
   isSlaBreach: boolean;
+  fundTransfer?: FundTransfer;
+  emiPayments?: EMIPayment[];
 }
 
 export interface AuditLogEntry {
@@ -94,6 +128,10 @@ export interface AuditLogEntry {
     | 'OFFICER_REJECTED'
     | 'KYC_VERIFIED'
     | 'KYC_REJECTED'
+    | 'FUND_TRANSFER_INITIATED'
+    | 'FUND_TRANSFER_COMPLETED'
+    | 'PAYMENT_RECEIVED'
+    | 'REMINDER_SENT'
     | 'LOGIN'
     | 'LOGOUT';
   details: string;
@@ -109,4 +147,41 @@ export interface DashboardMetrics {
   avgTurnaroundHours: number;
   slaBreachCount: number;
   totalApplicationsThisWeek: number;
+  pendingTransfers: number;
+  overduePayments: number;
+  totalDisbursed: number;
+}
+
+export interface ApprovalTrend {
+  date: string;
+  approved: number;
+  rejected: number;
+  pending: number;
+}
+
+export interface RiskDistribution {
+  riskBand: RiskBand;
+  count: number;
+  percentage: number;
+}
+
+export interface OfficerPerformance {
+  officerId: string;
+  officerName: string;
+  decisionsCount: number;
+  avgTurnaroundHours: number;
+  approvalRate: number;
+  overrideRate: number;
+}
+
+export interface AdminProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  avatar?: string;
+  phone?: string;
+  joinedAt: string;
+  lastLogin: string;
 }
