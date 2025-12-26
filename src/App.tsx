@@ -9,6 +9,10 @@ import Applications from "./pages/Applications";
 import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 import KYCPage from "./pages/KYCPage";
 import AuditPage from "./pages/AuditPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import PaymentsPage from "./pages/PaymentsPage";
+import TransfersPage from "./pages/TransfersPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,10 +26,14 @@ const App = () => (
         <Routes>
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/applications" element={<Applications />} />
             <Route path="/applications/:id" element={<ApplicationDetailPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/transfers" element={<TransfersPage />} />
             <Route path="/kyc" element={<KYCPage />} />
             <Route path="/audit" element={<AuditPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
