@@ -1,20 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Bank Officer Dashboard - Dark Theme Design System
+/* Bank Officer Dashboard - Premium Dark Theme Design System
    All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
+    --background: 222 47% 7%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 13%;
+    --card: 222 47% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 13%;
+    --popover: 222 47% 12%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 60%;
@@ -32,11 +34,11 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 22%;
-    --input: 217 33% 22%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
     --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Status colors */
     --success: 142 76% 36%;
@@ -51,25 +53,37 @@
     --risk-medium: 38 92% 50%;
     --risk-high: 0 84% 60%;
 
+    /* Chart colors - brighter for visibility */
+    --chart-1: 0 84% 65%;
+    --chart-2: 142 76% 50%;
+    --chart-3: 199 89% 55%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 262 83% 65%;
+
     /* Sidebar */
-    --sidebar-background: 222 47% 9%;
+    --sidebar-background: 222 47% 5%;
     --sidebar-foreground: 210 40% 90%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 222 47% 11%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
+    --sidebar-border: 217 33% 15%;
     --sidebar-ring: 217 91% 60%;
+
+    /* Gradient colors */
+    --gradient-start: 217 91% 60%;
+    --gradient-end: 262 83% 58%;
+    --glow-primary: 217 91% 60%;
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 222 47% 7%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 13%;
+    --card: 222 47% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 13%;
+    --popover: 222 47% 12%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 60%;
@@ -87,17 +101,17 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 22%;
-    --input: 217 33% 22%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
     --ring: 217 91% 60%;
 
-    --sidebar-background: 222 47% 9%;
+    --sidebar-background: 222 47% 5%;
     --sidebar-foreground: 210 40% 90%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 222 47% 11%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
+    --sidebar-border: 217 33% 15%;
     --sidebar-ring: 217 91% 60%;
   }
 }
@@ -109,6 +123,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -131,5 +146,47 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: hsl(var(--muted));
     border-radius: 3px;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-xl bg-card/80 border border-border/50 shadow-xl;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-md bg-background/60 border border-border/30;
+  }
+
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, hsl(var(--gradient-start)) 0%, hsl(var(--gradient-end)) 100%);
+    padding: 1px;
+    border-radius: var(--radius);
+  }
+
+  .gradient-border > * {
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) - 1px);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 40px -8px hsl(var(--glow-primary) / 0.5);
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .mesh-gradient {
+    background: 
+      radial-gradient(at 40% 20%, hsl(217 91% 60% / 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(262 83% 58% / 0.12) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(199 89% 48% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(142 76% 36% / 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(38 92% 50% / 0.08) 0px, transparent 50%),
+      hsl(var(--background));
   }
 }

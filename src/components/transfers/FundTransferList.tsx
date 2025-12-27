@@ -11,17 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { mockFundTransfers, pendingTransfers } from '@/data/mockPayments';
 import { FundTransfer } from '@/data/types';
-import { Send, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { PaymentGatewayModal } from './PaymentGatewayModal';
+import { 
+  Send, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  RefreshCw, 
+  Banknote,
+  Building2,
+  TrendingUp
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const formatCurrency = (amount: number) => {
@@ -37,7 +39,7 @@ const statusConfig = {
 
 export function FundTransferList() {
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showPaymentGateway, setShowPaymentGateway] = useState(false);
   const [transferFilter, setTransferFilter] = useState<'all' | 'pending' | 'processing' | 'completed'>('all');
 
   const filteredTransfers = mockFundTransfers.filter(t => {
@@ -62,29 +64,81 @@ export function FundTransferList() {
   };
 
   const handleProcessBatch = () => {
-    setShowConfirmDialog(true);
+    if (selectedTransfers.length === 0) {
+      toast.error('Please select at least one transfer');
+      return;
+    }
+    setShowPaymentGateway(true);
   };
 
-  const confirmBatchProcess = () => {
-    const totalAmount = pendingTransfers
-      .filter(t => selectedTransfers.includes(t.id))
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    toast.success(`Batch transfer initiated for ${selectedTransfers.length} transfers (${formatCurrency(totalAmount)})`);
-    setShowConfirmDialog(false);
+  const handleProcessComplete = () => {
     setSelectedTransfers([]);
   };
 
-  const totalSelectedAmount = pendingTransfers
-    .filter(t => selectedTransfers.includes(t.id))
+  const selectedTransferData = pendingTransfers.filter(t => selectedTransfers.includes(t.id));
+  const totalSelectedAmount = selectedTransferData.reduce((sum, t) => sum + t.amount, 0);
+
+  const totalPending = pendingTransfers.reduce((sum, t) => sum + t.amount, 0);
+  const totalCompleted = mockFundTransfers
+    .filter(t => t.status === 'COMPLETED')
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="space-y-6">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Pending Transfers</p>
+                <p className="text-2xl font-bold text-warning">{formatCurrency(totalPending)}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-warning/20 flex items-center justify-center">
+                <Clock className="h-6 w-6 text-warning" />
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{pendingTransfers.length} transfers awaiting</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Disbursed</p>
+                <p className="text-2xl font-bold text-success">{formatCurrency(totalCompleted)}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-success/20 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-success" />
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">This month</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Processing</p>
+                <p className="text-2xl font-bold text-primary">
+                  {mockFundTransfers.filter(t => t.status === 'PROCESSING').length}
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                <RefreshCw className="h-6 w-6 text-primary animate-spin" />
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">In transit</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Batch Controls */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -96,13 +150,14 @@ export function FundTransferList() {
                 </span>
               </div>
               {selectedTransfers.length > 0 && (
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="gap-1">
+                  <Banknote className="h-3 w-3" />
                   {selectedTransfers.length} selected • {formatCurrency(totalSelectedAmount)}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex border border-border rounded-lg overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="flex border border-border/50 rounded-lg overflow-hidden">
                 {(['all', 'pending', 'processing', 'completed'] as const).map((filter) => (
                   <Button
                     key={filter}
@@ -118,10 +173,10 @@ export function FundTransferList() {
               <Button
                 onClick={handleProcessBatch}
                 disabled={selectedTransfers.length === 0}
-                className="gap-2"
+                className="gap-2 glow-primary"
               >
                 <Send className="h-4 w-4" />
-                Process Batch
+                Process via Gateway
               </Button>
             </div>
           </div>
@@ -129,16 +184,17 @@ export function FundTransferList() {
       </Card>
 
       {/* Transfer List */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-card-foreground">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
             Fund Transfers ({filteredTransfers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
+              <TableRow className="border-border/50 hover:bg-transparent">
                 <TableHead className="w-12"></TableHead>
                 <TableHead>Transfer ID</TableHead>
                 <TableHead>Customer</TableHead>
@@ -154,7 +210,12 @@ export function FundTransferList() {
               {filteredTransfers.map((transfer) => {
                 const StatusIcon = statusConfig[transfer.status].icon;
                 return (
-                  <TableRow key={transfer.id} className="border-border">
+                  <TableRow 
+                    key={transfer.id} 
+                    className={`border-border/30 transition-colors ${
+                      selectedTransfers.includes(transfer.id) ? 'bg-primary/5' : ''
+                    }`}
+                  >
                     <TableCell>
                       {transfer.status === 'PENDING' && (
                         <Checkbox
@@ -173,7 +234,7 @@ export function FundTransferList() {
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{transfer.applicationId}</TableCell>
-                    <TableCell className="text-right font-medium text-foreground">
+                    <TableCell className="text-right font-semibold text-foreground">
                       {formatCurrency(transfer.amount)}
                     </TableCell>
                     <TableCell>
@@ -207,36 +268,13 @@ export function FundTransferList() {
         </CardContent>
       </Card>
 
-      {/* Confirm Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle>Confirm Batch Transfer</DialogTitle>
-            <DialogDescription>
-              You are about to process a batch transfer for the following:
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-3">
-            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-              <span className="text-muted-foreground">Number of transfers:</span>
-              <span className="font-semibold">{selectedTransfers.length}</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-              <span className="text-muted-foreground">Total amount:</span>
-              <span className="font-semibold text-lg">{formatCurrency(totalSelectedAmount)}</span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmBatchProcess} className="gap-2">
-              <Send className="h-4 w-4" />
-              Confirm & Process
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Payment Gateway Modal */}
+      <PaymentGatewayModal
+        open={showPaymentGateway}
+        onOpenChange={setShowPaymentGateway}
+        transfers={selectedTransferData}
+        onProcessComplete={handleProcessComplete}
+      />
     </div>
   );
 }
