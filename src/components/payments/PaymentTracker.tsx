@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { mockEMIPayments, paymentStats } from '@/data/mockPayments';
 import { EMIPayment } from '@/data/types';
+import { EMIDetailModal } from './EMIDetailModal';
 import { 
   Calendar, 
   AlertTriangle, 
@@ -29,7 +30,8 @@ import {
   IndianRupee,
   TrendingUp,
   TrendingDown,
-  Search
+  Search,
+  Receipt
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,6 +49,8 @@ const statusConfig = {
 export function PaymentTracker() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState<EMIPayment | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const filteredPayments = mockEMIPayments.filter(payment => {
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
@@ -54,60 +58,66 @@ export function PaymentTracker() {
     return matchesStatus && matchesSearch;
   });
 
-  const handleSendReminder = (payment: EMIPayment) => {
+  const handleSendReminder = (e: React.MouseEvent, payment: EMIPayment) => {
+    e.stopPropagation();
     toast.success(`Payment reminder sent for ${payment.applicationId} - EMI #${payment.emiNumber}`);
+  };
+
+  const handleRowClick = (payment: EMIPayment) => {
+    setSelectedPayment(payment);
+    setShowDetailModal(true);
   };
 
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card border-border">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Collected</p>
-                <p className="text-2xl font-bold text-chart-2">{formatCurrency(paymentStats.totalCollected)}</p>
+                <p className="text-2xl font-bold text-success">{formatCurrency(paymentStats.totalCollected)}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-chart-2/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-chart-2" />
+              <div className="h-12 w-12 rounded-full bg-success/20 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-success" />
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{paymentStats.paidCount} payments received</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Overdue Amount</p>
-                <p className="text-2xl font-bold text-chart-1">{formatCurrency(paymentStats.overdueAmount)}</p>
+                <p className="text-2xl font-bold text-destructive">{formatCurrency(paymentStats.overdueAmount)}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-chart-1/20 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-chart-1" />
+              <div className="h-12 w-12 rounded-full bg-destructive/20 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{paymentStats.overdueCount} overdue payments</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Upcoming EMIs</p>
-                <p className="text-2xl font-bold text-chart-4">{formatCurrency(paymentStats.upcomingAmount)}</p>
+                <p className="text-2xl font-bold text-primary">{formatCurrency(paymentStats.upcomingAmount)}</p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-chart-4/20 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-chart-4" />
+              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-primary" />
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{paymentStats.upcomingCount} upcoming in 30 days</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -116,8 +126,8 @@ export function PaymentTracker() {
                   {Math.round((paymentStats.paidCount / (paymentStats.paidCount + paymentStats.overdueCount)) * 100)}%
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <IndianRupee className="h-5 w-5 text-primary" />
+              <div className="h-12 w-12 rounded-full bg-chart-5/20 flex items-center justify-center">
+                <IndianRupee className="h-6 w-6 text-chart-5" />
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">This month</p>
@@ -126,7 +136,7 @@ export function PaymentTracker() {
       </div>
 
       {/* Filters */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
@@ -135,11 +145,11 @@ export function PaymentTracker() {
                 placeholder="Search by Application ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-background border-border"
+                className="pl-10 bg-background/50 border-border/50"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] bg-background border-border">
+              <SelectTrigger className="w-[180px] bg-background/50 border-border/50">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -155,16 +165,20 @@ export function PaymentTracker() {
       </Card>
 
       {/* Payment Table */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-card-foreground">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
             EMI Payments ({filteredPayments.length})
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              Click on any row to view details
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
+              <TableRow className="border-border/50 hover:bg-transparent">
                 <TableHead>Payment ID</TableHead>
                 <TableHead>Application</TableHead>
                 <TableHead>EMI #</TableHead>
@@ -184,16 +198,22 @@ export function PaymentTracker() {
                   dueDate.getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000;
 
                 return (
-                  <TableRow key={payment.id} className="border-border">
+                  <TableRow 
+                    key={payment.id} 
+                    className="border-border/30 cursor-pointer hover:bg-primary/5 transition-colors"
+                    onClick={() => handleRowClick(payment)}
+                  >
                     <TableCell className="font-mono text-sm">{payment.id}</TableCell>
                     <TableCell className="font-mono text-sm">{payment.applicationId}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">EMI #{payment.emiNumber}</Badge>
+                      <Badge variant="outline" className="font-mono">
+                        EMI #{payment.emiNumber}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium text-foreground">
+                    <TableCell className="text-right font-semibold text-foreground">
                       {formatCurrency(payment.amount)}
                     </TableCell>
-                    <TableCell className={isNearDue ? 'text-amber-400' : 'text-muted-foreground'}>
+                    <TableCell className={isNearDue ? 'text-warning font-medium' : 'text-muted-foreground'}>
                       {dueDate.toLocaleDateString('en-IN', {
                         day: '2-digit',
                         month: 'short',
@@ -211,7 +231,7 @@ export function PaymentTracker() {
                     </TableCell>
                     <TableCell>
                       {payment.lateFee ? (
-                        <span className="text-chart-1 font-medium">
+                        <span className="text-destructive font-medium">
                           +{formatCurrency(payment.lateFee)}
                         </span>
                       ) : (
@@ -229,8 +249,8 @@ export function PaymentTracker() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleSendReminder(payment)}
-                          className="gap-1"
+                          onClick={(e) => handleSendReminder(e, payment)}
+                          className="gap-1 hover:bg-primary/10"
                         >
                           <Bell className="h-3 w-3" />
                           {payment.reminderSent ? 'Resend' : 'Remind'}
@@ -244,6 +264,13 @@ export function PaymentTracker() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* EMI Detail Modal */}
+      <EMIDetailModal
+        open={showDetailModal}
+        onOpenChange={setShowDetailModal}
+        payment={selectedPayment}
+      />
     </div>
   );
 }
